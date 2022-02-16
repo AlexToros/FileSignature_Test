@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading;
 
 namespace FileSignature_Test
 {
@@ -12,13 +13,18 @@ namespace FileSignature_Test
 			var filePath = args[0];
 			var blockSize = int.Parse(args[1]);
 			var stream = File.OpenRead(filePath);
-
 			using var sha = SHA256.Create();
-			foreach (var (number, block) in BlockSequence(stream, blockSize))
+			
+			foreach (var block in BlockSequence(stream, blockSize))
 			{
-				var hash = sha.ComputeHash(block);
-				Console.WriteLine($"{number:00000}: {Convert.ToBase64String(hash)}");
+				ComputeAndPrintHash(sha, block);
 			}
+		}
+
+		static void ComputeAndPrintHash(HashAlgorithm algorithm, (int number, byte[] bytes) block)
+		{
+			var hash = algorithm.ComputeHash(block.bytes);
+			Console.WriteLine($"{block.number:00000}: {Convert.ToBase64String(hash)}");
 		}
 
 		static IEnumerable<(int, byte[])> BlockSequence(Stream stream, int blockSize)
