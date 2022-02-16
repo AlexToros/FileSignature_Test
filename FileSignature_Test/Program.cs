@@ -15,6 +15,8 @@ namespace FileSignature_Test
 		//ConcurrentBag<Thread> _freeThreads = new ConcurrentBag<Thread>();
 		//ConcurrentDictionary<int, Thread> _busyThreads = new ConcurrentDictionary<int, Thread>();
 
+		public event EventHandler OnFinished;
+
 		public MyThreadPool(Action<T> workTask)
 		{
 			_workTask = workTask;
@@ -38,6 +40,8 @@ namespace FileSignature_Test
 				if (itemExist)
 					Work(sourceItem);
 			} while (itemExist || !ContentIsOver);
+
+			OnFinished?.Invoke(this, null);
 		}
 
 		private void Work(T sourceItem)
@@ -75,14 +79,19 @@ namespace FileSignature_Test
 
 	class Program
 	{
+		static HashAlgorithm algorithm;
+
 		static void Main(string[] args)
 		{
+			algorithm = SHA256.Create();
+
 			var filePath = args[0];
 			var blockSize = int.Parse(args[1]);
 			var stream = File.OpenRead(filePath);
 
 			var workPool = new MyThreadPool<WorkItem>(ComputeAndPrintHash);
-			
+			workPool.OnFinished += (s,e) => algorithm.Dispose();
+
 			foreach (var block in BlockSequence(stream, blockSize))
 			{
 				workPool.AddWorkSource(block);
