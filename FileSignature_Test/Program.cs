@@ -31,10 +31,13 @@ namespace FileSignature_Test
 
 		private void MainLoop()
 		{
-			while (_contentQueue.TryDequeue(out T sourceItem) || !ContentIsOver)
+			bool itemExist;
+			do
 			{
-				Work(sourceItem);
-			}
+				itemExist = _contentQueue.TryDequeue(out T sourceItem);
+				if (itemExist)
+					Work(sourceItem);
+			} while (itemExist || !ContentIsOver);
 		}
 
 		private void Work(T sourceItem)
@@ -90,7 +93,6 @@ namespace FileSignature_Test
 
 		static void ComputeAndPrintHash(WorkItem item)
 		{
-			if (item.Bytes == null) return; //I dont know how bytes may be null here. But it is so
 			using var sha = SHA256.Create();
 			var hash = sha.ComputeHash(item.Bytes);
 			Console.WriteLine($"{item.Number:00000}: {Convert.ToBase64String(hash)}");
