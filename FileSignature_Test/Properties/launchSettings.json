@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FileSignature_Test": {
+      "commandName": "Project",
+      "commandLineArgs": "1.txt 10000"
+    }
+  }
+}

@@ -31,14 +31,14 @@ namespace FileSignature_Test
 				for (int i = 0; i < fullBlocksCount; i++)
 				{
 					var part = new byte[blockSize];
-					stream.Read(part, i * blockSize, blockSize);
+					stream.Read(part, 0, blockSize);
 					yield return part;
 				}
 
 				if (remind > 0)
 				{
 					var part = new byte[remind];
-					stream.Read(part, fullBlocksCount, remind);
+					stream.Read(part, 0, remind);
 					yield return part;
 				}
 			}
