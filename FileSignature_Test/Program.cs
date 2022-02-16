@@ -14,15 +14,14 @@ namespace FileSignature_Test
 			var stream = File.OpenRead(filePath);
 
 			using var sha = SHA256.Create();
-			var blockCounter = 0;
-			foreach (var block in BlockSequence(stream, blockSize))
+			foreach (var (number, block) in BlockSequence(stream, blockSize))
 			{
 				var hash = sha.ComputeHash(block);
-				Console.WriteLine($"{blockCounter++:00000}: {Convert.ToBase64String(hash)}");
+				Console.WriteLine($"{number:00000}: {Convert.ToBase64String(hash)}");
 			}
 		}
 
-		static IEnumerable<byte[]> BlockSequence(Stream stream, int blockSize)
+		static IEnumerable<(int, byte[])> BlockSequence(Stream stream, int blockSize)
 		{
 			var fullBlocksCount = (int)(stream.Length / blockSize);
 			var remind = (int)stream.Length % blockSize;
@@ -32,14 +31,14 @@ namespace FileSignature_Test
 				{
 					var part = new byte[blockSize];
 					stream.Read(part, 0, blockSize);
-					yield return part;
+					yield return (i, part);
 				}
 
 				if (remind > 0)
 				{
 					var part = new byte[remind];
 					stream.Read(part, 0, remind);
-					yield return part;
+					yield return (fullBlocksCount, part);
 				}
 			}
 		}
